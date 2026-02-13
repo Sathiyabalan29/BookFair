@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/bookfair.iml" filepath="$PROJECT_DIR$/.idea/bookfair.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/BookFair.iml" filepath="$PROJECT_DIR$/.idea/BookFair.iml" />
+      <module fileurl="file://$PROJECT_DIR$/backend/bookfair.iml" filepath="$PROJECT_DIR$/backend/bookfair.iml" />
     </modules>
   </component>
 </project>

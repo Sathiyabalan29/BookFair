@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -44,8 +45,9 @@ public class Stall {
     @Column(name = "stall_size")
     private StallSize stallSize;
 
-    @Column(name = "held_by_user_id")
-    private Long heldByUserId;
+    @ManyToOne
+    @JoinColumn(name = "held_by_user_id")
+    private User heldByUser;
 
     @Column(name = "hold_expiry_time")
     private LocalDateTime holdExpiryTime;
@@ -54,6 +56,11 @@ public class Stall {
     @JoinColumn(name = "stall_price_id")
     private StallPrice stallPrice;
 
-    public Stall() {}
+    @ManyToOne
+    @JoinColumn(name = "reservation_id")
+    private Reservation reservation;
+
+    public Stall() {
+    }
 
 }

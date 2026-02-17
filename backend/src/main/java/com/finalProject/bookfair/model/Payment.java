@@ -29,6 +29,8 @@ public class Payment {
     @OneToOne(mappedBy = "payment")
     private Refund refund;
 
+    private  String message;
+
     @Column(name = "amount_paid", nullable = false)
     private BigDecimal amountPaid;
 

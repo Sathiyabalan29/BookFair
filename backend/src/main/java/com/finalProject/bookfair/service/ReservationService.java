@@ -155,4 +155,31 @@ public class ReservationService {
         return reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("Reservation not found"));
     }
+
+    //  Cancel reservation
+    @Transactional
+    public String cancelReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+
+        if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+            return "Reservation already cancelled";
+        }
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+
+        for (Stall stall : reservation.getStalls()) {
+            stall.setReservation(null);
+            stall.setStatus(StallStatus.AVAILABLE);
+            stall.setHeldByUser(null);
+            stall.setHoldExpiryTime(null);
+        }
+
+        reservationRepository.save(reservation);
+        stallRepository.saveAll(reservation.getStalls());
+
+        return "Reservation cancelled";
+    }
+
+
 }

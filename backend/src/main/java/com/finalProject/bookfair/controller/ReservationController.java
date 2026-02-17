@@ -44,4 +44,10 @@ public class ReservationController {
         return reservationService.getById(id);
     }
 
+    //  Cancel reservation
+    @PostMapping("/cancel/{id}")
+    public String cancel(@PathVariable Long id) {
+        return reservationService.cancelReservation(id);
+    }
+
 }

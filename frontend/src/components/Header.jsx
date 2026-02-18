@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faTimes, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+import authService from '../services/authService'
+
 
 
 
@@ -17,6 +19,11 @@ export default function Header() {
   const [user, setUser] = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
+
+    useEffect(() => {
+    const currentUser = authService.getCurrentUser()
+    setUser(currentUser)
+  }, [location])
 
 
   const handleNavigation = (href, e) => {

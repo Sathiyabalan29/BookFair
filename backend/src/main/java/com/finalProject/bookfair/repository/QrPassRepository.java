@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface QrPassRepository extends JpaRepository<QrPass, Long> {
     Optional<QrPass> findByToken(String token);
     Optional<QrPass> findByUserId(Long userId);
+    Optional<QrPass> findByUserIdAndActiveTrue(Long userId);
 }

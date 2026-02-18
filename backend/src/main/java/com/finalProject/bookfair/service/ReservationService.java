@@ -1,5 +1,6 @@
 package com.finalProject.bookfair.service;
 
+import com.finalProject.bookfair.dto.QrPassResponseDTO;
 import com.finalProject.bookfair.dto.ReservationRequestDTO;
 import com.finalProject.bookfair.dto.ReservationResponseDTO;
 import com.finalProject.bookfair.enums.ReservationStatus;
@@ -10,6 +11,7 @@ import com.finalProject.bookfair.model.User;
 import com.finalProject.bookfair.repository.AuthRepository;
 import com.finalProject.bookfair.repository.ReservationRepository;
 import com.finalProject.bookfair.repository.StallRepository;
+import com.finalProject.bookfair.util.QrCodeUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,11 @@ public class ReservationService {
     @Autowired
     private AuthRepository authRepository;
 
+    @Autowired
+    private QrPassService qrPassService;
+
+    @Autowired
+    private EmailService emailService;
 
     //  Reserve stalls
     @Transactional
@@ -125,6 +132,16 @@ public class ReservationService {
         reservationRepository.save(reservation);
         stallRepository.saveAll(reservation.getStalls());
 
+        // Create QR Pass
+        QrPassResponseDTO pass = qrPassService.createPass(reservation.getUser().getId());
+
+        // Generate QR image
+        byte[] qrImage = QrCodeUtil.generate(pass.getToken());
+
+        // Send email
+        emailService.sendQr(pass.getEmail(), pass.getUserName(), qrImage , pass.getValidFrom(),
+                pass.getValidUntil());
+
 
         return "Reservation confirmed successfully";
     }
@@ -177,6 +194,15 @@ public class ReservationService {
 
         reservationRepository.save(reservation);
         stallRepository.saveAll(reservation.getStalls());
+
+        User user = reservation.getUser();
+
+        boolean hasConfirmedReservations =
+                reservationRepository.existsByUserAndStatus(user, ReservationStatus.CONFIRMED);
+
+        if (!hasConfirmedReservations) {
+            qrPassService.deactivatePass(user.getId());
+        }
 
         return "Reservation cancelled";
     }

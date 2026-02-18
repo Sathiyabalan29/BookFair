@@ -48,6 +48,16 @@ public class QrPassService {
         );
     }
 
+    public void deactivatePass(Long userId) {
+        QrPass pass = qrPassRepository.findByUserIdAndActiveTrue(userId)
+                .orElse(null);
+
+        if (pass != null) {
+            pass.setActive(false);
+            qrPassRepository.save(pass);
+        }
+    }
+
     public boolean validate(String token) {
 
         Optional<QrPass> opt = qrPassRepository.findByToken(token);

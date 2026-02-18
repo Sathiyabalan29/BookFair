@@ -5,4 +5,3 @@ public enum StallSize {
     MEDIUM,
     SMALL
 }
-

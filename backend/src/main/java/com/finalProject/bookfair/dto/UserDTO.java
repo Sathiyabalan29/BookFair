@@ -1,5 +1,7 @@
 package com.finalProject.bookfair.dto;
 
+import java.util.Set;
+
 public class UserDTO {
     private Long id;
     private String name;
@@ -11,9 +13,10 @@ public class UserDTO {
     private String vendorType;
     private String businessAddress;
 
+    private Set<GenreDTO> genres;
+
     public UserDTO() {
     }
-
 
     public UserDTO(Long id, String name, String email, String role,
                    String businessName, String businessRegisterNumber,
@@ -28,6 +31,22 @@ public class UserDTO {
         this.vendorType = vendorType;
         this.businessAddress = businessAddress;
     }
+
+    public UserDTO(Long id, String name, String email, String role,
+                   String businessName, String businessRegisterNumber,
+                   String phoneNumber, String vendorType, String businessAddress, Set<GenreDTO> genres) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.role = role;
+        this.businessName = businessName;
+        this.businessRegisterNumber = businessRegisterNumber;
+        this.phoneNumber = phoneNumber;
+        this.vendorType = vendorType;
+        this.businessAddress = businessAddress;
+        this.genres = genres;
+    }
+
 
     public Long getId() {
         return id;
@@ -99,5 +118,13 @@ public class UserDTO {
 
     public void setBusinessAddress(String businessAddress) {
         this.businessAddress = businessAddress;
+    }
+
+    public Set<GenreDTO> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(Set<GenreDTO> genres) {
+        this.genres = genres;
     }
 }

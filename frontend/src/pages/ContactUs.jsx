@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faEnvelope, faMapMarkerAlt, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import authService from '../services/authService';
+
 
 const ContactUs = () => {
     const [formData, setFormData] = useState({
@@ -11,6 +13,16 @@ const ContactUs = () => {
         message: ''
     });
 
+    useEffect(() => {
+        const user = authService.getCurrentUser();
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                name: user.name || '',
+                email: user.email || ''
+            }));
+        }
+    }, []);
     
 
     const [status, setStatus] = useState(null);

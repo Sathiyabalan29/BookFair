@@ -13,6 +13,9 @@ import TermsAndConditions from './components/TermsAndConditions';
 import ProtectedRoute from './components/ProtectedRoute';
 
 
+
+import VenueMap from './pages/Map/VenueMap';
+
 // Home Component with Section IDs for smooth scroll
 const Home = () => (
   <main>
@@ -42,6 +45,7 @@ function App() {
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
+            <Route path="/stalls" element={<StallOptions />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -49,6 +53,14 @@ function App() {
              
 
             </Route>
+            <Route
+              path="/venue-map"
+              element={
+                <ProtectedRoute>
+                  <VenueMap />
+                </ProtectedRoute>
+              }
+            />
         </Routes>
          
       </BrowserRouter>

@@ -32,14 +32,16 @@ const BookingPage = () => {
         );
     }
 
-    // Recalculate Mock Pricing logic (since backend doesn't persit it yet)
-    // In a real app, this would come from the backend or be persisted in context/state more robustly
+   // Helper function: determine size and price based on width
+    const getStallSizeAndPrice = (stall) => {
+        if (stall.width <= 45) return { sizeLabel: "Small", price: 50000 };
+        if (stall.width <= 65) return { sizeLabel: "Medium", price: 70000 };
+        return { sizeLabel: "Large", price: 100000 };
+    };
+
+    // Total calculation using helper
     const calculateTotal = () => {
-        return stalls.reduce((total, stall) => {
-            // Logic matching VenueMap: standard (<=40) = 50k, large (>40) = 100k
-            const price = stall.width > 40 ? 100000 : 50000;
-            return total + price;
-        }, 0);
+        return stalls.reduce((total, stall) => total + getStallSizeAndPrice(stall).price, 0);
     };
 
     const totalAmount = calculateTotal();
@@ -74,16 +76,9 @@ const BookingPage = () => {
             const reservationResponse = await reservationService.createReservation(reservationRequest);
             console.log("Reservation Response:", reservationResponse);
 
-            // 4. Navigate to Payment Page with REAL Reservation ID
-            // Backend returns totalPrice, but user pays 50% now.
-            // PRIORITIZE FRONTEND CALCULATION: The backend seems to have test data (e.g. 2000) 
-            // which confuses the user who expects 50,000.
-            // We blindly trust the frontend calculation for the payment flow to ensure UI consistency.
+            
+           const payable = totalAmount / 2;
 
-            const backendTotal = Number(reservationResponse.totalPrice);
-            const total = totalAmount; // Always use frontend total for consistency
-
-            const payable = total / 2;
 
             navigate("/payment", {
                 state: {
@@ -130,17 +125,20 @@ const BookingPage = () => {
 
                         {/* Stalls List */}
                         <div className="space-y-4 mb-8">
-                            {stalls.map((stall, index) => (
-                                <div key={index} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                    <div>
-                                        <p className="font-semibold text-gray-900">{stall.stallName}</p>
-                                        <p className="text-sm text-gray-500">{stall.width > 40 ? "Large (6x3 m)" : "Standard (3x3 m)"}</p>
+                            {stalls.map((stall, index) => {
+                                const { sizeLabel, price } = getStallSizeAndPrice(stall);
+                                return (
+                                    <div key={index} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                        <div>
+                                            <p className="font-semibold text-gray-900">{stall.stallName}</p>
+                                            <p className="text-sm text-gray-500">{sizeLabel} ({stall.width}×{stall.height} m)</p>
+                                        </div>
+                                        <div className="font-mono font-medium text-gray-700">
+                                            Rs. {price.toLocaleString()}
+                                        </div>
                                     </div>
-                                    <div className="font-mono font-medium text-gray-700">
-                                        Rs. {(stall.width > 40 ? 100000 : 50000).toLocaleString()}
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {/* Price Breakdown */}

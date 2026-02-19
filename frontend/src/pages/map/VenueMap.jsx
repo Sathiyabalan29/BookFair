@@ -21,18 +21,25 @@ export default function VenueMap() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Modal State
+   // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Helper to estimate price/size based on dimensions
-    const getStallDetails = (stall) => {
-        // Mock logic: assuming standard is 3x3, large is 6x3 based on width
-        const isLarge = stall.width > 40;
-        return {
-            stallSize: isLarge ? "6x3 m" : "3x3 m",
-            price: isLarge ? 100000 : 50000
-        };
-    };
+    
+const getStallDetails = (stall) => {
+    
+    let price = 0;
+    let stallSize = `${stall.width}x${stall.height} m`;
+
+    if (stall.width <= 45 && stall.height <= 45) {
+        price = 50000; 
+    } else if (stall.width <= 65 || stall.height <= 65) {
+        price = 70000;  
+    } else {
+        price = 100000; 
+    }
+
+    return { stallSize, price };
+};
 
     const loadData = async () => {
         try {

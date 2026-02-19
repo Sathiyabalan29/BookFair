@@ -4,15 +4,33 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faPhone, faBuilding, faIdCard, faMapMarkerAlt, faUserShield } from '@fortawesome/free-solid-svg-icons';
 import { motion } from 'framer-motion';
 
+import userService from '../services/userService'; // Import userService
+
 const Profile = () => {
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const currentUser = authService.getCurrentUser();
-        setUser(currentUser);
+        const fetchUserProfile = async () => {
+            const currentUser = authService.getCurrentUser();
+            if (currentUser && currentUser.id) {
+                try {
+                    // Fetch fresh data from backend
+                    const freshUserData = await userService.getUserById(currentUser.id);
+                    setUser(freshUserData);
+                } catch (error) {
+                    console.error("Failed to fetch user profile", error);
+                    // Fallback to local storage if fetch fails
+                    setUser(currentUser);
+                }
+            }
+            setLoading(false);
+        };
+
+        fetchUserProfile();
     }, []);
 
-    if (!user) {
+    if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-xl text-gray-600">Loading profile...</div>
@@ -29,10 +47,12 @@ const Profile = () => {
                     transition={{ duration: 0.5 }}
                     className="bg-white shadow-xl rounded-2xl overflow-hidden"
                 >
+                    {/* Header / Banner */}
                     <div className="bg-[#1e3a5f] h-32 sm:h-48 relative">
                         <div className="absolute -bottom-16 left-8">
                             <div className="h-32 w-32 rounded-full border-4 border-white bg-white flex items-center justify-center text-[#1e3a5f] text-5xl shadow-lg">
                                 <FontAwesomeIcon icon={faUser} />
+                                {/* If user has an avatar URL, use <img src={user.avatar} ... /> here instead */}
                                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                             </div>
                         </div>
@@ -47,6 +67,7 @@ const Profile = () => {
                                     {user.role || 'User'}
                                 </p>
                             </div>
+                            {/* Edit Profile Button could go here */}
                         </div>
 
                         <div className="border-t border-gray-100 pt-8">
@@ -72,6 +93,7 @@ const Profile = () => {
                             </dl>
                         </div>
 
+                        {/* Business Details Section - Only if they exist */}
                         {(user.businessName || user.businessRegisterNumber) && (
                             <div className="border-t border-gray-100 pt-8 mt-8">
                                 <h2 className="text-xl font-semibold text-[#1e3a5f] mb-6">Business Details</h2>
@@ -109,6 +131,23 @@ const Profile = () => {
                                     </div>
 
                                 </dl>
+                            </div>
+                        )}
+
+                        {/* Genres Section */}
+                        {user.genres && user.genres.length > 0 && (
+                            <div className="border-t border-gray-100 pt-8 mt-8">
+                                <h2 className="text-xl font-semibold text-[#1e3a5f] mb-6">Literary Interests</h2>
+                                <div className="flex flex-wrap gap-2">
+                                    {user.genres.map((genre) => (
+                                        <span
+                                            key={genre.id}
+                                            className="px-4 py-2 rounded-full bg-blue-50 text-blue-700 text-sm font-medium border border-blue-100"
+                                        >
+                                            {genre.name}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>

@@ -20,6 +20,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/Profile";
 import FAQ from './pages/FAQ';
 import BookingHistory from "./pages/user/BookingHistory";
+import RefundHistory from './pages/user/RefundHistory';
 
 import { ReservationProvider } from "./context/ReservationContext";
 import UserLayout from "./components/user/UserLayout";
@@ -79,6 +80,8 @@ function App() {
               <Route index element={<Profile />} />
               <Route path="bookings" element={<BookingHistory />} />
                <Route path="payments" element={<PaymentHistory />} />
+               <Route path="refunds" element={<RefundHistory />} />
+            
             </Route>
 
             {/* Payment Routes */}

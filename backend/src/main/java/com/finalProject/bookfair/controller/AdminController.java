@@ -59,4 +59,29 @@ public class AdminController {
         return stallService.getStallMap();
     }
 
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        adminService.deleteUser(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/genres/reports")
+    public List<java.util.Map<String, Object>> getGenreReports() {
+        return adminService.getGenreReports();
+    }
+
+
+    @PostMapping("/genres/add")
+    public ResponseEntity<String> addGenre(@RequestBody java.util.Map<String, String> payload) {
+        String genreName = payload.get("genreName");
+        if (genreName == null || genreName.trim().isEmpty()) {
+            return new ResponseEntity<>("Genre name is required", HttpStatus.BAD_REQUEST);
+        }
+        try {
+            adminService.addGenre(genreName);
+            return new ResponseEntity<>("Genre added successfully", HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
 }

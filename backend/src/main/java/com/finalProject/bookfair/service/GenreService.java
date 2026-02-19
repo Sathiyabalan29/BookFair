@@ -25,4 +25,11 @@ public class GenreService {
                 .map(g -> new GenreDTO(g.getId(), g.getGenreName()))
                 .collect(java.util.stream.Collectors.toList());
     }
+
+    public List<GenreDTO> getGenresByUserId(Long userId) {
+        return genreRepository.findByUsers_Id(userId).stream()
+                .map(g -> new GenreDTO(g.getId(), g.getGenreName()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
 }

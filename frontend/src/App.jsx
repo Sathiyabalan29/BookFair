@@ -33,6 +33,17 @@ import CreditCardPage from './pages/payment/CreditCardPage';
 import DebitCardPage from './pages/payment/DebitCardPage';
 import BankTransferPage from './pages/payment/BankTransferPage';
 import PaymentHistory from './components/PaymentHistory';
+
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
+import AdminLayout from './components/admin/AdminLayout';
+import Dashboard from './pages/admin/Dashboard';
+import Users from './pages/admin/Users';
+import Stalls from './pages/admin/Stalls';
+import Reservations from './pages/admin/Reservations';
+import Reports from './pages/admin/Reports';
+import GenreReports from './pages/admin/GenreReports';
+
+
 // Home Component with Section IDs for smooth scroll
 const Home = () => (
   <main>
@@ -108,6 +119,25 @@ function App() {
               }
             />
           </Route>
+
+           <Route
+            path="/admin-dashboard"
+            element={
+              <AdminProtectedRoute>
+                <AdminLayout />
+              </AdminProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="stalls" element={<Stalls />} />
+            <Route path="reservations" element={<Reservations />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="genres" element={<GenreReports />} />
+          </Route>    
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+
         </Routes>
       </ReservationProvider>
     </BrowserRouter>

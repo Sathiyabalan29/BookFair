@@ -9,6 +9,7 @@ import com.finalProject.bookfair.model.Payment;
 import com.finalProject.bookfair.model.Reservation;
 import com.finalProject.bookfair.model.Stall;
 import com.finalProject.bookfair.repository.PaymentRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final ReservationService reservationService;
 
+    @Transactional
     public PaymentResponseDTO createPayment(PaymentRequestDTO request) {
 
         //  Get reservation

@@ -20,4 +20,9 @@ public class RefundController {
         RefundResponseDTO response = refundService.processRefund(request);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<java.util.List<RefundResponseDTO>> getRefundsByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(refundService.getRefundsByUserId(userId));
+    }
 }

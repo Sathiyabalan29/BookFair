@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RefundRepository extends JpaRepository<Refund, Long> {
+
+    java.util.List<Refund> findByReservation_User_Id(Long userId);
 }

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -26,6 +27,7 @@ public class EmailService {
     @Autowired
     private SpringTemplateEngine templateEngine;
 
+    @Async
     public void sendQr(String to, String name, byte[] qr , LocalDate start, LocalDate end) {
 
         EmailLog log = new EmailLog();

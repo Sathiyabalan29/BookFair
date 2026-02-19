@@ -24,4 +24,10 @@ public class GenreController {
     public List<GenreDTO> getAllGenres() {
         return genreService.getAllGenres();
     }
+
+    @GetMapping("/user/{userId}")
+    public List<GenreDTO> getGenresByUserId(@PathVariable Long userId) {
+        return genreService.getGenresByUserId(userId);
+    }
+
 }

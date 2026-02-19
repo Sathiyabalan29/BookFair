@@ -3,8 +3,10 @@ package com.finalProject.bookfair.service;
 import com.finalProject.bookfair.dto.*;
 import com.finalProject.bookfair.enums.PaymentStatus;
 import com.finalProject.bookfair.enums.StallStatus;
+import com.finalProject.bookfair.model.Reservation;
 import com.finalProject.bookfair.model.Stall;
 import com.finalProject.bookfair.model.User;
+import com.finalProject.bookfair.model.Genre;
 import com.finalProject.bookfair.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class AdminService {
@@ -32,10 +36,49 @@ public class AdminService {
     private PaymentRepository paymentRepository;
 
     @Autowired
+    private RefundRepository refundRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private AuthRepository authRepository;
+
+    @Autowired
+    private QrPassRepository qrPassRepository;
+
+    @Autowired
+    private GenreRepository genreRepository;
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<java.util.Map<String, Object>> getGenreReports() {
+        return genreRepository.findAll().stream().map(genre -> {
+            java.util.Map<String, Object> report = new java.util.HashMap<>();
+            report.put("id", genre.getId());
+            report.put("genreName", genre.getGenreName());
+
+            List<java.util.Map<String, String>> businesses = genre.getUsers().stream()
+                    .map(user -> {
+                        java.util.Map<String, String> business = new java.util.HashMap<>();
+                        business.put("businessName", user.getBusinessName());
+                        business.put("email", user.getEmail());
+                        return business;
+                    })
+                    .collect(Collectors.toList());
+
+            report.put("businesses", businesses);
+            report.put("count", businesses.size());
+            return report;
+        }).collect(Collectors.toList());
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void addGenre(String genreName) {
+        if (genreRepository.findAll().stream().anyMatch(g -> g.getGenreName().equalsIgnoreCase(genreName))) {
+            throw new RuntimeException("Genre already exists: " + genreName);
+        }
+        genreRepository.save(new com.finalProject.bookfair.model.Genre(genreName));
+    }
 
     public List<UserDTO> getAllUsers() {
         return adminRepository.findAll().stream()
@@ -70,8 +113,6 @@ public class AdminService {
                 user.getBusinessAddress(),
                 genreDTOs);
     }
-
-
 
     public List<AdminReservationDTO> getAllReservations() {
         return reservationRepository.findAll().stream()
@@ -112,7 +153,7 @@ public class AdminService {
                 .count();
     }
 
-
+    // Stall methods
 
     public List<AdminStallDTO> getAllStalls() {
         return convertToAdminStallDTOs(stallRepository.findAll());
@@ -165,7 +206,7 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-
+    // Payment methods
 
     public long getTotalPayments() {
         return paymentRepository.count();
@@ -178,7 +219,7 @@ public class AdminService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-
+    // Dashboard
 
     public AdminDashboardDTO getDashboardStats() {
         return new AdminDashboardDTO(
@@ -193,5 +234,39 @@ public class AdminService {
 
     public long getTotalUsers() {
         return adminRepository.count();
+    }
+
+    public void deleteUser(Long id) {
+        User user = adminRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        if (user.getGenres() != null) {
+            user.getGenres().clear();
+        }
+
+        List<Stall> heldStalls = stallRepository.findByHeldByUser(user);
+        for (Stall stall : heldStalls) {
+            stall.setHeldByUser(null);
+            stall.setHoldExpiryTime(null);
+            stall.setStatus(StallStatus.AVAILABLE);
+            stallRepository.save(stall);
+        }
+
+        for (Reservation reservation : user.getReservations()) {
+            if (reservation.getRefund() != null) {
+                refundRepository.delete(reservation.getRefund());
+            }
+            for (Stall stall : reservation.getStalls()) {
+                stall.setReservation(null);
+                stall.setStatus(StallStatus.AVAILABLE);
+                stallRepository.save(stall);
+            }
+        }
+
+        if (user.getQrPass() != null) {
+            qrPassRepository.delete(user.getQrPass());
+        }
+
+        adminRepository.delete(user);
     }
 }

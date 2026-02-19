@@ -18,6 +18,7 @@ import Register from "./pages/Register";
 import TermsAndConditions from "./components/TermsAndConditions";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/Profile";
+import FAQ from './pages/FAQ';
 import BookingHistory from "./pages/user/BookingHistory";
 
 import { ReservationProvider } from "./context/ReservationContext";
@@ -26,6 +27,11 @@ import UserLayout from "./components/user/UserLayout";
 import VenueMap from "./pages/map/VenueMap";
 import BookingPage from "./pages/map/BookingPage";
 
+import PaymentMethodSelection from './components/PaymentMethodSelection';
+import CreditCardPage from './pages/payment/CreditCardPage';
+import DebitCardPage from './pages/payment/DebitCardPage';
+import BankTransferPage from './pages/payment/BankTransferPage';
+import PaymentHistory from './components/PaymentHistory';
 // Home Component with Section IDs for smooth scroll
 const Home = () => (
   <main>
@@ -60,7 +66,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/terms" element={<TermsAndConditions />} />
-
+              <Route path="/faq" element={<FAQ />} />
             {/* User Profile Dashboard */}
             <Route
               path="/profile"
@@ -72,7 +78,14 @@ function App() {
             >
               <Route index element={<Profile />} />
               <Route path="bookings" element={<BookingHistory />} />
+               <Route path="payments" element={<PaymentHistory />} />
             </Route>
+
+            {/* Payment Routes */}
+            <Route path="/payment" element={<PaymentMethodSelection />} />
+            <Route path="/payment/credit-card" element={<CreditCardPage />} />
+            <Route path="/payment/debit-card" element={<DebitCardPage />} />
+            <Route path="/payment/bank-transfer" element={<BankTransferPage />} />
 
             <Route
               path="/venue-map"

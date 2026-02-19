@@ -76,4 +76,22 @@ public class RefundService {
                 .message(percentage == 0 ? "No refund eligible" : "Refund request submitted")
                 .build();
     }
+
+    public java.util.List<RefundResponseDTO> getRefundsByUserId(Long userId) {
+        java.util.List<Refund> refunds = refundRepository.findByReservation_User_Id(userId);
+        return refunds.stream()
+                .map(this::mapToResponse)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private RefundResponseDTO mapToResponse(Refund refund) {
+        return RefundResponseDTO.builder()
+                .refundId(refund.getId())
+                .refundAmount(refund.getRefundAmount())
+                .percentage(refund.getRefundPercentage())
+                .status(refund.getRefundStatus())
+                .message(refund.getRefundPercentage() == 0 ? "No refund eligible"
+                        : "Refund status: " + refund.getRefundStatus())
+                .build();
+    }
 }

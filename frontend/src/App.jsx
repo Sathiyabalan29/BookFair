@@ -42,6 +42,8 @@ import Stalls from './pages/admin/Stalls';
 import Reservations from './pages/admin/Reservations';
 import Reports from './pages/admin/Reports';
 import GenreReports from './pages/admin/GenreReports';
+import GenreSelectionPage from './pages/vendor/GenreSelectionPage';
+
 
 
 // Home Component with Section IDs for smooth scroll
@@ -118,6 +120,13 @@ function App() {
                 </ProtectedRoute>
               }
             />
+          
+
+          <Route path="/select-genres" element={
+              <ProtectedRoute>
+                <GenreSelectionPage />
+              </ProtectedRoute>
+            } />
           </Route>
 
            <Route

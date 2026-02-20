@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import paymentService from '../../services/paymentService';
-import reservationService from '../../services/reservationService';
 import { useReservation } from '../../context/ReservationContext';
-import axios from 'axios';
 
 const CreditCardPage = () => {
     const location = useLocation();
@@ -12,12 +10,13 @@ const CreditCardPage = () => {
     const locationState = location.state || {};
     const bookingId = locationState.bookingId;
 
-    // Initialize amount from location state
     const [amount, setAmount] = useState(Number(locationState.amount) || 0);
     const [cardData, setCardData] = useState({ name: '', number: '', expiry: '', cvv: '' });
     const [saveCard, setSaveCard] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [errors, setErrors] = useState({ name: '', number: '', expiry: '', cvv: '' });
 
+    // Redirect if invalid booking or amount
     useEffect(() => {
         if (!bookingId || amount <= 0) {
             alert("Invalid Reservation or Amount. Please try booking again.");
@@ -25,47 +24,104 @@ const CreditCardPage = () => {
         }
     }, [bookingId, amount, navigate]);
 
-    // Card input change handler
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setCardData(prev => ({ ...prev, [name]: value }));
+        let formattedValue = value;
+
+        // Auto-format expiry MM/YY
+        if (name === 'expiry') {
+            formattedValue = value.replace(/[^\d]/g, '');
+            if (formattedValue.length > 2) {
+                formattedValue = formattedValue.slice(0, 2) + '/' + formattedValue.slice(2, 4);
+            }
+        }
+
+        // Auto-format card number as "1234 5678 9012 3456"
+        if (name === 'number') {
+            const digits = value.replace(/\D/g, '');
+            formattedValue = digits.match(/.{1,4}/g)?.join(' ') || '';
+        }
+
+        setCardData(prev => ({ ...prev, [name]: formattedValue }));
+
+        // --- Real-time validation ---
+        let errorMsg = '';
+        switch(name) {
+            case 'name':
+                if (formattedValue && !/^[A-Za-z\s]{2,}$/.test(formattedValue)) {
+                    errorMsg = 'Letters & spaces only, min 2 chars.';
+                }
+                break;
+            case 'number':
+                if (formattedValue && !/^\d{0,16}$/.test(formattedValue.replace(/\s/g, ''))) {
+                    errorMsg = 'Card must be 16 digits.';
+                }
+                break;
+            case 'expiry':
+                if (formattedValue && !/^(0[1-9]|1[0-2])\/\d{0,2}$/.test(formattedValue)) {
+                    errorMsg = 'MM/YY format';
+                }
+                break;
+            case 'cvv':
+                if (formattedValue && !/^\d{0,3}$/.test(formattedValue)) {
+                    errorMsg = '3 digits CVV';
+                }
+                break;
+            default: break;
+        }
+        setErrors(prev => ({ ...prev, [name]: errorMsg }));
     };
 
-    // Card icon based on number
     const getCardIcon = () => {
-        const num = cardData.number;
+        const num = cardData.number.replace(/\s/g,'');
         if (num.startsWith('4')) return 'Visa';
         if (num.startsWith('5')) return 'MasterCard';
         return 'Card';
     };
 
-    // Form submit handler
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsProcessing(true);
+        const { name, number, expiry, cvv } = cardData;
+        const newErrors = { name: '', number: '', expiry: '', cvv: '' };
+        let hasError = false;
 
+        // Final validation
+        if (!/^[A-Za-z\s]{2,}$/.test(name)) { newErrors.name = "Enter valid cardholder name."; hasError = true; }
+        const sanitizedNumber = number.replace(/\s/g,'');
+        if (!/^\d{16}$/.test(sanitizedNumber)) { newErrors.number = "Enter 16-digit card number."; hasError = true; }
+        if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) { newErrors.expiry = "Expiry must be MM/YY."; hasError = true; }
+        else {
+            const [m,y] = expiry.split('/').map(Number);
+            const expDate = new Date(2000+y, m-1, 1);
+            const now = new Date();
+            if (expDate < new Date(now.getFullYear(), now.getMonth(), 1)) { newErrors.expiry = "Card expired."; hasError = true; }
+        }
+        if (!/^\d{3}$/.test(cvv)) { newErrors.cvv = "CVV must be 3 digits."; hasError = true; }
+
+        setErrors(newErrors);
+        if (hasError) return;
+
+        // Submit payment
+        setIsProcessing(true);
         try {
             const storedUser = JSON.parse(localStorage.getItem('user'));
             const finalUserId = userId || (storedUser ? storedUser.id : null);
 
-            if (!bookingId || !finalUserId) {
-                alert("Invalid booking or user ID.");
-                navigate('/venue-map');
-                return;
+            if (!bookingId || !finalUserId) { 
+                alert("Invalid booking/user"); 
+                navigate('/venue-map'); 
+                return; 
             }
 
-            const paymentRequest = {
+            await paymentService.createPayment({
                 userId: finalUserId,
                 reservationId: Number(bookingId),
                 paymentMethod: 'CREDIT_CARD',
                 amount: Number(amount)
-            };
-
-            await paymentService.createPayment(paymentRequest);
+            });
             alert('Payment Successful!');
             navigate('/select-genres');
         } catch (error) {
-            console.error("Payment Error:", error);
             alert('Payment failed: ' + (error.response?.data?.message || error.message || "Unknown error"));
         } finally {
             setIsProcessing(false);
@@ -91,9 +147,7 @@ const CreditCardPage = () => {
                 {/* Amount Display */}
                 <div className="bg-blue-50 p-4 rounded-lg mb-6 flex justify-between items-center border border-blue-100">
                     <span className="text-blue-800 font-medium">Total to Pay</span>
-                    <span className="text-xl font-bold text-blue-900">
-                        Rs. {amount.toLocaleString()}
-                    </span>
+                    <span className="text-xl font-bold text-blue-900">Rs. {amount.toLocaleString()}</span>
                 </div>
 
                 {/* Form */}
@@ -105,12 +159,12 @@ const CreditCardPage = () => {
                         <input
                             type="text"
                             name="name"
-                            required
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                             placeholder="John Doe"
                             value={cardData.name}
                             onChange={handleChange}
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                         />
+                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                     </div>
 
                     {/* Card Number */}
@@ -119,16 +173,16 @@ const CreditCardPage = () => {
                         <input
                             type="text"
                             name="number"
-                            required
-                            maxLength="19"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pl-10"
                             placeholder="0000 0000 0000 0000"
+                            maxLength="19"
                             value={cardData.number}
                             onChange={handleChange}
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm pl-10 focus:ring-blue-500 focus:border-blue-500 ${errors.number ? 'border-red-500' : 'border-gray-300'}`}
                         />
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none top-6 text-gray-400 text-xs font-bold w-10">
                             {getCardIcon()}
                         </div>
+                        {errors.number && <p className="text-red-500 text-xs mt-1">{errors.number}</p>}
                     </div>
 
                     {/* Expiry & CVV */}
@@ -138,29 +192,30 @@ const CreditCardPage = () => {
                             <input
                                 type="text"
                                 name="expiry"
-                                required
                                 placeholder="MM/YY"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                maxLength="5"
                                 value={cardData.expiry}
                                 onChange={handleChange}
+                                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${errors.expiry ? 'border-red-500' : 'border-gray-300'}`}
                             />
+                            {errors.expiry && <p className="text-red-500 text-xs mt-1">{errors.expiry}</p>}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
                             <input
                                 type="password"
                                 name="cvv"
-                                required
-                                maxLength="3"
                                 placeholder="123"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                maxLength="3"
                                 value={cardData.cvv}
                                 onChange={handleChange}
+                                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${errors.cvv ? 'border-red-500' : 'border-gray-300'}`}
                             />
+                            {errors.cvv && <p className="text-red-500 text-xs mt-1">{errors.cvv}</p>}
                         </div>
                     </div>
 
-                    {/* Checkbox */}
+                    {/* Save Card */}
                     <div className="flex items-center">
                         <input
                             id="save-card"
@@ -174,12 +229,11 @@ const CreditCardPage = () => {
                         </label>
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Submit */}
                     <button
                         type="submit"
                         disabled={isProcessing || amount <= 0}
-                        className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isProcessing ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                            }`}
+                        className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isProcessing ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                     >
                         {isProcessing ? 'Processing...' : `Pay Rs. ${amount.toLocaleString()}`}
                     </button>

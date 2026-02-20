@@ -18,7 +18,7 @@ const PRICING_TIERS = [
   {
     name: 'Medium Stall',
     size: '4m × 4m',
-    price: 'Rs. 85,000',
+    price: 'Rs. 70,000',
     description: 'Ideal for growing publishers with moderate inventory.',
     features: [
       '2 Display Tables',
@@ -33,7 +33,7 @@ const PRICING_TIERS = [
   {
     name: 'Large Stall',
     size: '6m × 4m',
-    price: 'Rs. 150,000',
+    price: 'Rs. 100,000',
     description: 'Premium space for major publishers and large displays.',
     features: [
       '4 Display Tables',

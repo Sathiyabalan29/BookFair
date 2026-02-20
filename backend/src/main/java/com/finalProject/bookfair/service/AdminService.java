@@ -9,6 +9,8 @@ import com.finalProject.bookfair.model.User;
 import com.finalProject.bookfair.model.Genre;
 import com.finalProject.bookfair.repository.*;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,7 +52,7 @@ public class AdminService {
     @Autowired
     private GenreRepository genreRepository;
 
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public List<java.util.Map<String, Object>> getGenreReports() {
         return genreRepository.findAll().stream().map(genre -> {
             java.util.Map<String, Object> report = new java.util.HashMap<>();
@@ -72,7 +74,7 @@ public class AdminService {
         }).collect(Collectors.toList());
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void addGenre(String genreName) {
         if (genreRepository.findAll().stream().anyMatch(g -> g.getGenreName().equalsIgnoreCase(genreName))) {
             throw new RuntimeException("Genre already exists: " + genreName);
@@ -236,6 +238,7 @@ public class AdminService {
         return adminRepository.count();
     }
 
+    @Transactional
     public void deleteUser(Long id) {
         User user = adminRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));

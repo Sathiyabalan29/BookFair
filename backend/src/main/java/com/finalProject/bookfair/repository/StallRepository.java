@@ -26,7 +26,7 @@ public interface StallRepository extends JpaRepository<Stall, Long> {
 
     List<Stall> findByHeldByUser_Id(Long heldByUserId);
 
-    List<Stall> findByHeldByUserAndStatus(User heldByUser, StallStatus status);
+    List<Stall> findByHeldByUserAndStatusIn(User heldByUser, List<StallStatus> statuses);
 
     @Query("SELECT new com.finalProject.bookfair.dto.StallDTO(s.stallName, s.status, s.x, s.y, s.width, s.height) FROM Stall s")
     List<com.finalProject.bookfair.dto.StallDTO> findAllProjected();

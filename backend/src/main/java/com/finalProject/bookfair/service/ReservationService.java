@@ -50,11 +50,7 @@ public class ReservationService {
             throw new RuntimeException("No stalls selected");
         }
 
-        // Check max 3 reservations per user
-        List<Stall> userHeldStalls = stallRepository.findByHeldByUserAndStatus(user, StallStatus.HOLD);
-        if (userHeldStalls.size() + dto.getStallNames().size() > 3) {
-            throw new RuntimeException("Cannot hold more than 3 stalls per user");
-        }
+
 
         List<Stall> stalls = dto.getStallNames().stream()
                 .map(name -> stallRepository.findByStallName(name)
@@ -125,7 +121,6 @@ public class ReservationService {
         // Mark stalls as BOOKED
         for (Stall stall : reservation.getStalls()) {
             stall.setStatus(StallStatus.BOOKED);
-            stall.setHeldByUser(null);
             stall.setHoldExpiryTime(null);
         }
 

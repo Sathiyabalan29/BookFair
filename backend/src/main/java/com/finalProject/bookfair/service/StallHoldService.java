@@ -27,9 +27,12 @@ public class StallHoldService {
         User user = authRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Stall> heldStalls = stallRepository.findByHeldByUserAndStatus(user, StallStatus.HOLD);
-        if (heldStalls.size() + stallNames.size() > 3) {
-            throw new RuntimeException("Cannot hold more than 3 stalls per user");
+
+        List<Stall> userStalls = stallRepository.findByHeldByUserAndStatusIn(user, List.of(StallStatus.HOLD, StallStatus.BOOKED));
+
+
+        if (userStalls.size() + stallNames.size() > 3) {
+            throw new RuntimeException("Cannot hold more than 3 stalls per user (including booked stalls)");
         }
 
         for (String stallName : stallNames) {

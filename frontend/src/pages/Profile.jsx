@@ -11,24 +11,27 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            const currentUser = authService.getCurrentUser();
-            if (currentUser && currentUser.id) {
-                try {
-                    // Fetch fresh data from backend
-                    const freshUserData = await userService.getUserById(currentUser.id);
-                    setUser(freshUserData);
-                } catch (error) {
-                    console.error("Failed to fetch user profile", error);
-                    // Fallback to local storage if fetch fails
-                    setUser(currentUser);
-                }
-            }
-            setLoading(false);
-        };
+    const fetchUserProfile = async () => {
+        const currentUser = authService.getCurrentUser();
+        if (currentUser && currentUser.id) {
+            try {
+                const freshUserData = await userService.getUserById(currentUser.id);
+                
+                // Fetch user genres
+                const genres = await userService.getGenresByUserId(currentUser.id);
 
-        fetchUserProfile();
-    }, []);
+                // Add genres to user object
+                setUser({ ...freshUserData, genres: genres });
+            } catch (error) {
+                console.error("Failed to fetch user profile", error);
+                setUser(currentUser);
+            }
+        }
+        setLoading(false);
+    };
+
+    fetchUserProfile();
+}, []);
 
     if (loading) {
         return (

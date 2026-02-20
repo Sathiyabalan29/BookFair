@@ -33,39 +33,32 @@ const BankTransferPage = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Prevent default form submission
-        const handleConfirm = async () => {
-            setIsProcessing(true);
-            try {
-                // Fallback to localStorage if context is empty
-                const storedUser = JSON.parse(localStorage.getItem('user'));
-                const finalUserId = userId || (storedUser ? storedUser.id : null);
+        e.preventDefault(); 
+        setIsProcessing(true);
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const finalUserId = userId || (storedUser ? storedUser.id : null);
 
-                if (!finalUserId) {
-                    alert("User not identified. Please log in again.");
-                    navigate('/login');
-                    return;
-                }
-
-                const paymentRequest = {
-                    userId: finalUserId,
-                    reservationId: Number(bookingId),
-                    paymentMethod: 'BANK_TRANSFER'
-                    // amount is calculated by backend
-                };
-
-                await paymentService.createPayment(paymentRequest);
-                alert('Bank Transfer Recorded! Please upload receipt in profile if required.');
-                navigate('/select-genres');
-            } catch (error) {
-                console.error(error);
-                alert('Payment failed: ' + (error.message || "Unknown error"));
-            } finally {
-                setIsProcessing(false);
+            if (!finalUserId) {
+                alert("User not identified. Please log in again.");
+                navigate('/login');
+                return;
             }
-        };
-        // Call the new handleConfirm function
-        await handleConfirm();
+
+            await paymentService.createPayment({
+                userId: finalUserId,
+                reservationId: Number(bookingId),
+                paymentMethod: 'BANK_TRANSFER'
+            });
+
+            alert('Bank Transfer Recorded! Please upload receipt in profile if required.');
+            navigate('/select-genres');
+        } catch (error) {
+            console.error(error);
+            alert('Payment failed: ' + (error.message || "Unknown error"));
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -75,7 +68,9 @@ const BankTransferPage = () => {
                 {/* Header */}
                 <div className="mb-6">
                     <button onClick={() => navigate('/')} className="text-sm text-gray-500 hover:text-gray-700 flex items-center mb-4">
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                        </svg>
                         Cancel
                     </button>
                     <h2 className="text-2xl font-bold text-gray-900">Bank Transfer</h2>
@@ -83,22 +78,24 @@ const BankTransferPage = () => {
                 </div>
 
                 {/* Amount Display */}
-                <div className="bg-purple-50 p-4 rounded-lg mb-6 flex justify-between items-center border border-purple-100">
-                    <span className="text-purple-800 font-medium">Total to Pay</span>
-                    <span className="text-xl font-bold text-purple-900">Rs. {amount.toLocaleString()}</span>
+                <div className="bg-blue-50 p-4 rounded-lg mb-6 flex justify-between items-center border border-blue-100">
+                    <span className="text-blue-800 font-medium">Total to Pay</span>
+                    <span className="text-xl font-bold text-blue-900">Rs. {amount.toLocaleString()}</span>
                 </div>
 
                 {/* Bank Details Card */}
                 <div className="bg-gray-50 p-5 rounded-lg border border-gray-200 mb-6 relative">
                     <button
                         onClick={handleCopy}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-purple-600 transition-colors"
+                        className="absolute top-4 right-4 text-gray-400 hover:text-blue-600 transition-colors"
                         title="Copy Details"
                     >
                         {copied ? (
                             <span className="text-xs text-green-600 font-semibold">Copied!</span>
                         ) : (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
                         )}
                     </button>
 
@@ -126,7 +123,7 @@ const BankTransferPage = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
 
                     {/* Instructions */}
-                    <div className="text-sm text-gray-600 bg-yellow-50 p-3 rounded border border-yellow-100">
+                    <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded border border-blue-100">
                         <p><strong>Step 1:</strong> Transfer <strong>Rs. {amount.toLocaleString()}</strong> to the above account.</p>
                         <p className="mt-1"><strong>Step 2:</strong> Upload the transaction receipt below.</p>
                     </div>
@@ -143,8 +140,8 @@ const BankTransferPage = () => {
                                 file:mr-4 file:py-2 file:px-4
                                 file:rounded-full file:border-0
                                 file:text-sm file:font-semibold
-                                file:bg-purple-50 file:text-purple-700
-                                hover:file:bg-purple-100
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100
                             "
                         />
                     </div>
@@ -153,8 +150,7 @@ const BankTransferPage = () => {
                     <button
                         type="submit"
                         disabled={!receipt || isProcessing}
-                        className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${!receipt || isProcessing ? 'bg-purple-300 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
-                            }`}
+                        className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${!receipt || isProcessing ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                     >
                         {isProcessing ? 'Verifying...' : 'Confirm Payment'}
                     </button>

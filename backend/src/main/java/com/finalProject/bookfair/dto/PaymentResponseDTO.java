@@ -15,4 +15,5 @@ public class PaymentResponseDTO{
     private String message;
     private Long userId;
     private Long reservationId;
+    private String paymentMethod;
 }

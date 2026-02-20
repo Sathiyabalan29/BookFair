@@ -118,6 +118,7 @@ public class PaymentService {
                         .status(p.getPaymentStatus())
                         .reservationId(p.getReservation().getId())
                         .userId(p.getUser().getId())
+                        .paymentMethod(String.valueOf(p.getPaymentMethod()))
                         .build())
                 .toList();
     }

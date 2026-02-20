@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/genres")
@@ -30,4 +31,10 @@ public class GenreController {
         return genreService.getGenresByUserId(userId);
     }
 
+    @PutMapping("/user/{userId}")
+    public Set<GenreDTO> updateUserGenres(
+            @PathVariable Long userId,
+            @RequestBody List<Long> genreIds) {
+        return genreService.updateUserGenres(userId, genreIds);
+    }
 }
